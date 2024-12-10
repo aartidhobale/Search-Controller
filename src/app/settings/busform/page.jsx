@@ -15,7 +15,7 @@ export default function BusScheduleForm() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [tableData, setTableData] = useState([]);
-  const [language, setLanguage] = useState('en'); // Default language
+  const [language, setLanguage] = useState('en');
   const [translations, setTranslations] = useState({});
   const { register, handleSubmit, reset } = useForm();
 
@@ -26,12 +26,10 @@ export default function BusScheduleForm() {
     submit: "Submit",
     schedule: "Bus Schedule",
     conditions: "* Schedule terms and conditions*",
-    startDate: "Start Date",
-    endDate: "End Date",
     noData: "No data available",
   };
 
-  // Fetch translations based on selected language
+  // Fetch translations when language changes
   useEffect(() => {
     const fetchTranslations = async () => {
       try {
@@ -55,34 +53,37 @@ export default function BusScheduleForm() {
     fetchTranslations();
   }, [language]);
 
-  // Fetch data from local storage on component mount
+  // Fetch initial data from localStorage
   useEffect(() => {
-    const storedData = localStorage.getItem("busScheduleData");
+    const storedData = localStorage.getItem('busScheduleData');
     if (storedData) {
-      setTableData(JSON.parse(storedData)); // Set the data to the tableData state
+      setTableData(JSON.parse(storedData)); // Parse and set the data to tableData
     }
   }, []);
 
-  // Save data to local storage whenever tableData is updated
+  // Save data to localStorage whenever tableData changes
   useEffect(() => {
-    if (tableData.length > 0) {
-      localStorage.setItem("busScheduleData", JSON.stringify(tableData));
-    }
+    localStorage.setItem('busScheduleData', JSON.stringify(tableData));
   }, [tableData]);
 
   const onSubmit = (data) => {
     const formattedStartDate = isValidDate(startDate)
-      ? format(startDate, "dd/MM/yyyy")
-      : "";
+      ? format(startDate, 'dd/MM/yyyy')
+      : '';
     const formattedEndDate = isValidDate(endDate)
-      ? format(endDate, "dd/MM/yyyy")
-      : "";
+      ? format(endDate, 'dd/MM/yyyy')
+      : '';
 
-    data.startDate = formattedStartDate;
-    data.endDate = formattedEndDate;
+    const newEntry = {
+      ...data,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+    };
 
-    setTableData((prevData) => [...prevData, data]); // Add new entry to table data
-    reset(); // Reset the form
+    setTableData((prevData) => [...prevData, newEntry]); // Update state
+    reset(); // Reset form fields
+    setStartDate(null);
+    setEndDate(null);
   };
 
   return (
@@ -100,9 +101,6 @@ export default function BusScheduleForm() {
             className="border rounded-lg p-2"
           >
             <option value="en">English</option>
-            {/* <option value="es">Spanish</option> */}
-            {/* <option value="fr">French</option> */}
-            {/* <option value="de">German</option> */}
             <option value="hi">Hindi</option>
             <option value="mr">Marathi</option>
           </select>
@@ -162,7 +160,6 @@ export default function BusScheduleForm() {
           {translations.conditions || "* Schedule terms and conditions*"}
         </p>
 
-        {/* DataTable component to display tableData */}
         <DataTable data={tableData} translations={translations} />
       </div>
     </div>
